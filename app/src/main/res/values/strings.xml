@@ -22,6 +22,13 @@
     <string name="battle_updates">Battle Field Info:</string>
     <string name="title_activity_battle_action">BattleAction</string>
 
+    <string name="buttonRock">Rock</string>
+    <string name="buttonPaper">Paper</string>
+    <string name="buttonScissors">Scissors</string>
+    <string name="attackText">Please select an Attack</string>
+
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

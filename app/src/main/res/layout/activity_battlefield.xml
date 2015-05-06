@@ -2,17 +2,20 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#ff4040"
     android:orientation="vertical">
-
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/title_activity_battlefield" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Your Current HP: 6"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/title_activity_battlefield"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your Current HP:"
         android:id="@+id/tvHP" />
 
     <TextView
@@ -21,9 +24,10 @@
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/send_button"
+        android:id="@+id/bReady"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:text="@string/button_ready" />
 
     <Button
@@ -52,11 +56,14 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/battle_updates" />
-
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scrollbars="none" >
     <TextView
         android:id="@+id/tvUpdates"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:text="" />
-
+    </ScrollView>
 </LinearLayout>

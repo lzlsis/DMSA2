@@ -4,7 +4,6 @@ package com.example.dms.dmsa2;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -35,7 +34,7 @@ public class BattlefieldActivity extends Activity
         Intent intent = getIntent();
         battlePlayer = (BattlePlayer) intent.getExtras().get
                 (BattlePlayer.class.getName());
-        readyButton = (Button) findViewById(R.id.send_button);
+        readyButton = (Button) findViewById(R.id.bReady);
         readyButton.setOnClickListener(this);
         updateTextView = (TextView) findViewById(R.id.tvUpdates);
         receivedMessages = new ArrayList<String>();
@@ -53,19 +52,22 @@ public class BattlefieldActivity extends Activity
 
         currentStats.setText("Your current HP: " + hpLable);
         previousAction.setText(actionLable);
-    }
-
-    public void onStart() {
-        super.onStart();
         battlePlayer.registerActivity(this);
         Thread thread = new Thread(battlePlayer);
         thread.start();
     }
 
+    public void onStart() {
+        super.onStart();
+//        battlePlayer.registerActivity(this);
+//        Thread thread = new Thread(battlePlayer);
+//        thread.start();
+    }
+
     public void onStop() {
         super.onStop();
-        battlePlayer.stop();
-        battlePlayer.registerActivity(null);
+//        battlePlayer.stop();
+//        battlePlayer.registerActivity(null);
     }
 
     public synchronized void receivedUpdate(String message) {
@@ -139,8 +141,8 @@ public class BattlefieldActivity extends Activity
     public void onClick(View view) {
         if (view == readyButton) {
 
-//            Intent intent = new Intent(this, BattleAction.class);
-//            intent.putExtra(BattlePlayer.class.getName(), battlePlayer);
+            Intent intent = new Intent(this, BattleAction.class);
+            startActivityForResult(intent, 0);
 //            startActivity(intent);
             Toast.makeText(getApplicationContext(),
                     "Open action activity", Toast.LENGTH_SHORT).show();
@@ -175,6 +177,16 @@ public class BattlefieldActivity extends Activity
             Toast toastMessage = Toast.makeText(getApplicationContext(),
                     rMessage, Toast.LENGTH_SHORT);
             toastMessage.show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int reqCode, int resCode, Intent i){
+        if(i != null){
+            Bundle bun = i.getExtras();
+            if(reqCode == 0 && resCode == RESULT_OK){
+                battlePlayer.forward(bun.getString("resultMessage"));
+            }
         }
     }
 }
