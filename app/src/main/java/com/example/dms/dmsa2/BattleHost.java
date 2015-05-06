@@ -226,12 +226,8 @@ public class BattleHost implements BattlePlayer {
                 for (ClientHandler clientHandler : clientConnections) {
                     try {
                         clientHandler.send(message);
-                        for(String id : playerHpMap.keySet()){
-                            String statsMessage = id + " " + playerHpMap.get(id);
-                            clientHandler.send(statsMessage);
-                        }
-                        battlefield.receivedUpdate
-                                ("SERVER: sending message " + message);
+//                        battlefield.receivedUpdate
+//                                ("SERVER: sending message " + message);
                     } catch (IOException e) {
                         battlefield.receivedUpdate
                                 ("SERVER: Error sending message");

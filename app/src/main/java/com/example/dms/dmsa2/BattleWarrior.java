@@ -12,6 +12,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -106,9 +107,9 @@ public class BattleWarrior implements BattlePlayer {
         }
         battlefield.receivedUpdate("CLIENT: chat server found");
 //        Log.w("BattleWarrior", "Chat server service found");
-        Mailer mailer = new Mailer();
-        Thread mailerThread = new Thread(mailer);
-        mailerThread.start();
+//        Mailer mailer = new Mailer();
+//        Thread mailerThread = new Thread(mailer);
+//        mailerThread.start();
         // listen for incoming messages
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader
@@ -118,7 +119,7 @@ public class BattleWarrior implements BattlePlayer {
                 String message = br.readLine(); // blocking
                 // put message on client display
                 if (battlefield != null)
-                    battlefield.receivedUpdate("RECEIVED: " + message);
+                    battlefield.receivedUpdate(message);
             }
         } catch (IOException e) {
             battlefield.receivedUpdate
@@ -135,11 +136,22 @@ public class BattleWarrior implements BattlePlayer {
 
     // implementation of BattlePlayer method
     public void forward(String message) {
-        synchronized (resultMessage) {
 
-            resultMessage = message;
-            // notify waiting threads that there is a new message to send
-//            resultMessage.notifyAll();
+        PrintWriter pw = null;
+        try {
+            pw = new PrintWriter(new BufferedWriter
+                    (new OutputStreamWriter(socket.getOutputStream())));
+        } catch (IOException e) {
+            Log.e("BattleWarrior", "forward IOException: " + e);
+            stop();
+        }catch (NullPointerException e){
+
+            Log.e("BattleWarrior", "forward NullPointerException: " + e);
+            stop();
+        }
+        if (message.length() > 0 && pw != null) {
+            pw.println(message);
+            pw.flush();
         }
     }
 
@@ -175,44 +187,6 @@ public class BattleWarrior implements BattlePlayer {
         return playerName;
     }
 
-    // inner class that handles sending messages to server chat nodes
-    private class Mailer implements Runnable {
-        public void run() {
-            PrintWriter pw = null;
-            try {
-                pw = new PrintWriter(new BufferedWriter
-                        (new OutputStreamWriter(socket.getOutputStream())));
-            } catch (IOException e) {
-//                Log.e("BattleWarrior", "Mailer IOException: " + e);
-                stop();
-            }
-            while (!stopRequested) {  // get a message
-                String message;
-                synchronized (resultMessage) {
-//                    while (resultMessage.length() == 0) {
-//                        try {
-//                            resultMessage.wait();
-//                        } catch (InterruptedException e) { // ignore
-//                        }
-//                        if (stopRequested)
-//                            return;
-//                    }
-
-                    if (stopRequested)
-                        return;
-                    message = resultMessage;
-                }
-
-                // forward message to server
-                if (message.length() > 0) {
-                    pw.println(message);
-                    pw.flush();
-                    battlefield.receivedUpdate
-                            ("CLIENT: sending message " + message);
-                }
-            }
-        }
-    }
 
     // inner class that receives device discovery changes
     public class DeviceDiscoveryBroadcastReceiver

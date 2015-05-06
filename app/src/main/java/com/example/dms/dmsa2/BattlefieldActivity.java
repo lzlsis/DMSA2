@@ -139,11 +139,11 @@ public class BattlefieldActivity extends Activity
     public void onClick(View view) {
         if (view == readyButton) {
 
-            Intent intent = new Intent(this, BattleAction.class);
-            intent.putExtra(BattlePlayer.class.getName(), battlePlayer);
-            startActivity(intent);
+//            Intent intent = new Intent(this, BattleAction.class);
+//            intent.putExtra(BattlePlayer.class.getName(), battlePlayer);
+//            startActivity(intent);
             Toast.makeText(getApplicationContext(),
-                    "Pressed Test0", Toast.LENGTH_SHORT).show();
+                    "Open action activity", Toast.LENGTH_SHORT).show();
 
 
         } else if (view == test0) {
