@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface BattlePlayer extends Runnable, Serializable {
     // uuid for the Bluetooth application
     public static final UUID SERVICE_UUID
-            = UUID.fromString("aa7e561f-591f-4767-bf26-e4bff3f0895f");
+            = UUID.fromString("aa7e561f-591f-4767-bf26-e4bff3f089ff");
     // name for the Bluetooth application
     public static final String SERVICE_NAME = "Tag Game";
     // forward a message to all chat nodes in the Bluetooth network

@@ -92,14 +92,14 @@ public class BattlefieldActivity extends Activity
     }
 
     private String interpret(String s) {
-        StringTokenizer tokenizer = new StringTokenizer(s);
-        String type = tokenizer.nextToken(":");
+        StringTokenizer tokenizer = new StringTokenizer(s,"_");
+        String type = tokenizer.nextToken();
         if(type.equalsIgnoreCase("update")) {
-            String attackerID = tokenizer.nextToken("_");
-            String attackerHP = tokenizer.nextToken("_");
-            String enemyID = tokenizer.nextToken("_");
-            String enemyHP = tokenizer.nextToken("_");
-            String result = tokenizer.nextToken("_").toLowerCase();
+            String attackerID = tokenizer.nextToken();
+            String attackerHP = tokenizer.nextToken();
+            String enemyID = tokenizer.nextToken();
+            String enemyHP = tokenizer.nextToken();
+            String result = tokenizer.nextToken().toLowerCase();
             if (battlePlayer.getPlayerName().equals(attackerID)) {
                 attackerID = "YOU";
                 hpLable = attackerHP;
@@ -127,7 +127,6 @@ public class BattlefieldActivity extends Activity
             if (attackerID.equals("YOU") || enemyID.equals("YOU")) {
                 actionLable = translation;
             }
-
 
             return translation;
         }else

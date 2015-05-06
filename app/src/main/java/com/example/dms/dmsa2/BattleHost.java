@@ -146,7 +146,7 @@ public class BattleHost implements BattlePlayer {
         String attackerInfo = attackerID + "_" + playerHpMap.get(attackerID);
         String enemyInfo = enemyID + "_" + playerHpMap.get(enemyID);
         synchronized (messages) {
-            messages.add(attackerInfo + "_" + enemyInfo + "_" + result);
+            messages.add("update_"+attackerInfo + "_" + enemyInfo + "_" + result);
             // notify waiting threads that there is a new message to send
             messages.notifyAll();
         }

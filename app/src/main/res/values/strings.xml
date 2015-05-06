@@ -2,7 +2,7 @@
     <string name="app_name">DMSA2</string>
 
     <string name="title_activity_battlefield">Battlefield</string>
-    <string name="title">Bluetooth Demonstration</string>
+    <string name="title">DMS: Tag Game</string>
     <string name="start_mode">Start Mode:</string>
     <string name="button_make_discoverable">Make Discoverable</string>
     <string name="button_host_create">Create a Battlefield</string>
