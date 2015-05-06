@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -26,9 +27,12 @@ public class BattleHost implements BattlePlayer {
     private List<ClientHandler> clientConnections;
     private List<String> messages;//list of messages still to be mailed
     private BattlefieldActivity battlefield;
-    private static final int MAX_HP = 6;
+
+
     private int hp;
+    private String playerName;
     private HashMap<String, Integer> playerHpMap;
+    private List<String> results;
 
     public BattleHost() {
 
@@ -37,6 +41,10 @@ public class BattleHost implements BattlePlayer {
         messages = new ArrayList<String>();
         hp = MAX_HP;
         playerHpMap = new HashMap<String, Integer>();
+        playerName = BluetoothAdapter.getDefaultAdapter().getName();
+        playerHpMap.put(playerName, MAX_HP);
+        playerHpMap.put("other", MAX_HP);
+        results = new ArrayList<String>();
     }
 
     // implementation of BattlePlayer method
@@ -52,7 +60,7 @@ public class BattleHost implements BattlePlayer {
                     = bluetoothAdapter.listenUsingRfcommWithServiceRecord
                     (BattlePlayer.SERVICE_NAME, BattlePlayer.SERVICE_UUID);
         } catch (IOException e) {
-            Log.e("BattleHost", "IOException: " + e);
+//            Log.e("BattleHost", "IOException: " + e);
             return;
         }
         // prepare the mailer that will handle outgoing messages
@@ -63,9 +71,9 @@ public class BattleHost implements BattlePlayer {
         while (!stopRequested) {
             try {  //block upto 500ms timeout to get incoming connected socket
                 BluetoothSocket socket = serverSocket.accept(500);
-                battlefield.showReceivedMessage
+                battlefield.receivedUpdate
                         ("SERVER: Client connected");
-                Log.w("BattleHost", "New client connection accepted");
+//                Log.w("BattleHost", "New client connection accepted");
                 // handle the client connection in a separate thread
                 ClientHandler clientHandler = new ClientHandler(socket);
                 clientConnections.add(clientHandler);
@@ -86,11 +94,8 @@ public class BattleHost implements BattlePlayer {
 
     // implementation of BattlePlayer method
     public void forward(String message) {
-        synchronized (messages) {
-            messages.add(message);
-            // notify waiting threads that there is a new message to send
-            messages.notifyAll();
-        }
+        interpret(message);
+
     }
 
     // implementation of BattlePlayer method
@@ -108,12 +113,19 @@ public class BattleHost implements BattlePlayer {
         this.battlefield = battlefield;
     }
 
+    @Override
+    public String getPlayerName() {
+        return playerName;
+    }
+
     private void interpret(String message) {
-        StringTokenizer tokenizer = new StringTokenizer(message, " ");
+        StringTokenizer tokenizer = new StringTokenizer(message, "_");
         String attackerID = tokenizer.nextToken();
         String enemyID = tokenizer.nextToken();
         String result = tokenizer.nextToken().toLowerCase();
         int hp = 0;
+
+        Log.e("INTERPRETATION", "-------------------" + message);
         switch (result) {
             case "hit":
                 hp = playerHpMap.get(enemyID) - 2;
@@ -128,12 +140,16 @@ public class BattleHost implements BattlePlayer {
             case "missed":
                 break;
             default:
+                Log.e("INTERPRETATION", "-------not working");
                 break;
         }
-        String attackerInfo = attackerID + " " + playerHpMap.get(attackerID);
-        String enemyInfo = enemyID + " " + playerHpMap.get(enemyID);
-        forward(attackerInfo + " " + enemyInfo); // have server forward message
-        forward(enemyInfo + " " + attackerInfo);
+        String attackerInfo = attackerID + "_" + playerHpMap.get(attackerID);
+        String enemyInfo = enemyID + "_" + playerHpMap.get(enemyID);
+        synchronized (messages) {
+            messages.add(attackerInfo + "_" + enemyInfo + "_" + result);
+            // notify waiting threads that there is a new message to send
+            messages.notifyAll();
+        }
     }
 
     // inner class that handles incoming communication with a client
@@ -148,9 +164,9 @@ public class BattleHost implements BattlePlayer {
                 pw = new PrintWriter(new BufferedWriter
                         (new OutputStreamWriter(socket.getOutputStream())));
             } catch (IOException e) {
-                battlefield.showReceivedMessage
+                battlefield.receivedUpdate
                         ("SERVER: Error creating pw");
-                Log.e("BattleHost", "ClientHandler IOException: " + e);
+//                Log.e("BattleHost", "ClientHandler IOException: " + e);
             }
         }
 
@@ -165,9 +181,9 @@ public class BattleHost implements BattlePlayer {
                     interpret(message);
                 }
             } catch (IOException e) {
-                battlefield.showReceivedMessage
+                battlefield.receivedUpdate
                         ("SERVER: Client disconnecting");
-                Log.w("BattleHost", "Client Disconnecting");
+//                Log.w("BattleHost", "Client Disconnecting");
             } finally {
                 closeConnection();
             }
@@ -205,7 +221,7 @@ public class BattleHost implements BattlePlayer {
                 }
                 // put message on server display
                 if (battlefield != null)
-                    battlefield.showReceivedMessage("RECEIVED: " + message);
+                    battlefield.receivedUpdate(message);
                 // pass message to all clients
                 for (ClientHandler clientHandler : clientConnections) {
                     try {
@@ -214,13 +230,13 @@ public class BattleHost implements BattlePlayer {
                             String statsMessage = id + " " + playerHpMap.get(id);
                             clientHandler.send(statsMessage);
                         }
-                        battlefield.showReceivedMessage
+                        battlefield.receivedUpdate
                                 ("SERVER: sending message " + message);
                     } catch (IOException e) {
-                        battlefield.showReceivedMessage
+                        battlefield.receivedUpdate
                                 ("SERVER: Error sending message");
-                        Log.e("BattleHost",
-                                "Mailer Message Dropped: " + message);
+//                        Log.e("BattleHost",
+//                                "Mailer Message Dropped: " + message);
                     }
                 }
             }

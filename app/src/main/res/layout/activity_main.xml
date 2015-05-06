@@ -26,16 +26,16 @@
         android:orientation="horizontal" >
 
         <Button
-            android:id="@+id/server_start_button"
+            android:id="@+id/bCreate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/button_server_start" />
+            android:text="@string/button_host_create" />
 
         <Button
-            android:id="@+id/client_start_button"
+            android:id="@+id/bJoin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/button_client_start" />
+            android:text="@string/button_warrior_join" />
     </LinearLayout>
 
     <TextView

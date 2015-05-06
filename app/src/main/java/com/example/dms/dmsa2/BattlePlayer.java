@@ -14,6 +14,7 @@ public interface BattlePlayer extends Runnable, Serializable {
     // name for the Bluetooth application
     public static final String SERVICE_NAME = "Tag Game";
     // forward a message to all chat nodes in the Bluetooth network
+    public static final int MAX_HP = 20;
 
     public void forward(String message);
 
@@ -22,4 +23,6 @@ public interface BattlePlayer extends Runnable, Serializable {
 
     // registers or unregisters (if null) a ChatActivity for display
     public void registerActivity(BattlefieldActivity battlefield);
+
+    public String getPlayerName();
 }

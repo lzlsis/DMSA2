@@ -27,9 +27,9 @@ public class MainActivity extends Activity
         discoverableButton
                 = (Button) findViewById(R.id.discoverable_button);
         discoverableButton.setOnClickListener(this);
-        serverStartButton = (Button) findViewById(R.id.server_start_button);
+        serverStartButton = (Button) findViewById(R.id.bCreate);
         serverStartButton.setOnClickListener(this);
-        clientStartButton = (Button) findViewById(R.id.client_start_button);
+        clientStartButton = (Button) findViewById(R.id.bJoin);
         clientStartButton.setOnClickListener(this);
         statusTextView = (TextView) findViewById(R.id.status_textview);
     }

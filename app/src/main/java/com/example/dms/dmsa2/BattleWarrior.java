@@ -1,6 +1,7 @@
 /**
- A class that represents a client for the Bluetooth chat network
- @see AndroidBluetoothDemo.java
+ * A class that represents a client for the Bluetooth chat network
+ *
+ * @see AndroidBluetoothDemo.java
  */
 package com.example.dms.dmsa2;
 
@@ -11,7 +12,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -31,6 +31,8 @@ public class BattleWarrior implements BattlePlayer {
     private BattlefieldActivity battlefield;
     private BroadcastReceiver deviceDiscoveryBroadcastReceiver;
     private int hp;
+    private String resultMessage;
+    private String playerName;
 
     public BattleWarrior() {
         devices = new ArrayList<BluetoothDevice>();
@@ -38,6 +40,9 @@ public class BattleWarrior implements BattlePlayer {
         messages = new ArrayList<String>();
         battlefield = null;
         deviceDiscoveryBroadcastReceiver = null;
+        resultMessage = "";
+        hp = MAX_HP;
+        playerName = BluetoothAdapter.getDefaultAdapter().getName();
     }
 
     // implementation of BattlePlayer method
@@ -67,9 +72,9 @@ public class BattleWarrior implements BattlePlayer {
             }
         }
         if (devices.size() == 0 && !stopRequested) {
-            battlefield.showReceivedMessage
+            battlefield.receivedUpdate
                     ("CLIENT: no devices discovered, restart client");
-            Log.w("BattleWarrior", "No devices discovered");
+//            Log.w("BattleWarrior", "No devices discovered");
             stopRequested = true;
             return;
         }
@@ -78,10 +83,10 @@ public class BattleWarrior implements BattlePlayer {
         socket = null;
         for (BluetoothDevice device : devices) {  // try to open a connection to device using UUID
             try {
-                battlefield.showReceivedMessage
+                battlefield.receivedUpdate
                         ("CLIENT: checking for server on " + device.getName());
-                Log.w("BattleWarrior", "Checking for server on "
-                        + device.getName());
+//                Log.w("BattleWarrior", "Checking for server on "
+//                        + device.getName());
                 socket = device.createRfcommSocketToServiceRecord
                         (BattlePlayer.SERVICE_UUID);
                 // open the connection
@@ -93,14 +98,14 @@ public class BattleWarrior implements BattlePlayer {
             }
         }
         if (socket == null) {
-            battlefield.showReceivedMessage
+            battlefield.receivedUpdate
                     ("CLIENT: no server found, restart client");
-            Log.e("BattleWarrior", "No server service found");
+//            Log.e("BattleWarrior", "No server service found");
             stopRequested = true;
             return;
         }
-        battlefield.showReceivedMessage("CLIENT: chat server found");
-        Log.w("BattleWarrior", "Chat server service found");
+        battlefield.receivedUpdate("CLIENT: chat server found");
+//        Log.w("BattleWarrior", "Chat server service found");
         Mailer mailer = new Mailer();
         Thread mailerThread = new Thread(mailer);
         mailerThread.start();
@@ -113,12 +118,12 @@ public class BattleWarrior implements BattlePlayer {
                 String message = br.readLine(); // blocking
                 // put message on client display
                 if (battlefield != null)
-                    battlefield.showReceivedMessage("RECEIVED: " + message);
+                    battlefield.receivedUpdate("RECEIVED: " + message);
             }
         } catch (IOException e) {
-            battlefield.showReceivedMessage
+            battlefield.receivedUpdate
                     ("CLIENT: Client disconnecting");
-            Log.w("BattleWarrior", "Client Disconnecting");
+//            Log.w("BattleWarrior", "Client Disconnecting");
         } finally {
             try {
                 socket.close();
@@ -130,10 +135,11 @@ public class BattleWarrior implements BattlePlayer {
 
     // implementation of BattlePlayer method
     public void forward(String message) {
-        synchronized (messages) {
-            messages.add(message);
+        synchronized (resultMessage) {
+
+            resultMessage = message;
             // notify waiting threads that there is a new message to send
-            messages.notifyAll();
+//            resultMessage.notifyAll();
         }
     }
 
@@ -148,8 +154,8 @@ public class BattleWarrior implements BattlePlayer {
         synchronized (devices) {
             devices.notifyAll();
         }
-        synchronized (messages) {
-            messages.notifyAll();
+        synchronized (resultMessage) {
+            resultMessage.notifyAll();
         }
         if (socket != null) {
             try {
@@ -164,6 +170,11 @@ public class BattleWarrior implements BattlePlayer {
         this.battlefield = battlefield;
     }
 
+    @Override
+    public String getPlayerName() {
+        return playerName;
+    }
+
     // inner class that handles sending messages to server chat nodes
     private class Mailer implements Runnable {
         public void run() {
@@ -172,27 +183,33 @@ public class BattleWarrior implements BattlePlayer {
                 pw = new PrintWriter(new BufferedWriter
                         (new OutputStreamWriter(socket.getOutputStream())));
             } catch (IOException e) {
-                Log.e("BattleWarrior", "Mailer IOException: " + e);
+//                Log.e("BattleWarrior", "Mailer IOException: " + e);
                 stop();
             }
             while (!stopRequested) {  // get a message
                 String message;
-                synchronized (messages) {
-                    while (messages.size() == 0) {
-                        try {
-                            messages.wait();
-                        } catch (InterruptedException e) { // ignore
-                        }
-                        if (stopRequested)
-                            return;
-                    }
-                    message = messages.remove(0);
+                synchronized (resultMessage) {
+//                    while (resultMessage.length() == 0) {
+//                        try {
+//                            resultMessage.wait();
+//                        } catch (InterruptedException e) { // ignore
+//                        }
+//                        if (stopRequested)
+//                            return;
+//                    }
+
+                    if (stopRequested)
+                        return;
+                    message = resultMessage;
                 }
+
                 // forward message to server
-                pw.println(message);
-                pw.flush();
-                battlefield.showReceivedMessage
-                        ("CLIENT: sending message " + message);
+                if (message.length() > 0) {
+                    pw.println(message);
+                    pw.flush();
+                    battlefield.receivedUpdate
+                            ("CLIENT: sending message " + message);
+                }
             }
         }
     }
@@ -209,22 +226,22 @@ public class BattleWarrior implements BattlePlayer {
                     devices.add(device);
                 }
                 // note newer API can use device.fetchUuidsWithSdp for SDP
-                battlefield.showReceivedMessage
+                battlefield.receivedUpdate
                         ("CLIENT: device discovered " + device.getName());
-                Log.w("BattleWarrior", "Device discovered " + device.getName());
+//                Log.w("BattleWarrior", "Device discovered " + device.getName());
             } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals
                     (action)) {
-                battlefield.showReceivedMessage
+                battlefield.receivedUpdate
                         ("CLIENT: device discovery started");
-                Log.w("BattleWarrior", "Device discovery started");
+//                Log.w("BattleWarrior", "Device discovery started");
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals
                     (action)) {  // notify chat client that device discovery has finished
                 synchronized (devices) {
                     devices.notifyAll();
                 }
-                battlefield.showReceivedMessage
+                battlefield.receivedUpdate
                         ("CLIENT: device discovery finished");
-                Log.w("BattleWarrior", "Device discovery finished");
+//                Log.w("BattleWarrior", "Device discovery finished");
             }
         }
     }
