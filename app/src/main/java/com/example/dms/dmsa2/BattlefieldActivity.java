@@ -4,6 +4,7 @@ package com.example.dms.dmsa2;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -47,7 +48,7 @@ public class BattlefieldActivity extends Activity
 
         currentStats = (TextView) findViewById(R.id.tvHP);
         previousAction = (TextView) findViewById(R.id.tvStatus);
-        hpLable = ""+battlePlayer.MAX_HP;
+        hpLable = "" + battlePlayer.MAX_HP;
         actionLable = battlePlayer.getPlayerName() + ", you are in perfect condition.";
 
         currentStats.setText("Your current HP: " + hpLable);
@@ -73,15 +74,7 @@ public class BattlefieldActivity extends Activity
     public synchronized void receivedUpdate(String message) {
         receivedMessages.add(0, message);
         final String update = interpret(message);
-//
-//        final StringBuilder stringBuilder = new StringBuilder();
-//        for (int i = 0; i < receivedMessages.size() && i < MAX_RECEIVED_DISPLAY;
-//             i++) {
-//            String translation = interpret(receivedMessages.get(i));
-//            stringBuilder.append(translation);
-//            stringBuilder.append("\n");
-//        }
-        // update the received TextView in the UI thread
+
         updateTextView.post(new Runnable() {
             public void run() {
 //                updateTextView.setText(stringBuilder.toString());
@@ -94,9 +87,9 @@ public class BattlefieldActivity extends Activity
     }
 
     private String interpret(String s) {
-        StringTokenizer tokenizer = new StringTokenizer(s,"_");
+        StringTokenizer tokenizer = new StringTokenizer(s, "_");
         String type = tokenizer.nextToken();
-        if(type.equalsIgnoreCase("update")) {
+        if (type.equalsIgnoreCase("update")) {
             String attackerID = tokenizer.nextToken();
             String attackerHP = tokenizer.nextToken();
             String enemyID = tokenizer.nextToken();
@@ -131,7 +124,7 @@ public class BattlefieldActivity extends Activity
             }
 
             return translation;
-        }else
+        } else
             return s;
 
 
@@ -143,7 +136,6 @@ public class BattlefieldActivity extends Activity
 
             Intent intent = new Intent(this, BattleAction.class);
             startActivityForResult(intent, 0);
-//            startActivity(intent);
             Toast.makeText(getApplicationContext(),
                     "Open action activity", Toast.LENGTH_SHORT).show();
 
@@ -181,10 +173,12 @@ public class BattlefieldActivity extends Activity
     }
 
     @Override
-    protected void onActivityResult(int reqCode, int resCode, Intent i){
-        if(i != null){
+    protected void onActivityResult(int reqCode, int resCode, Intent i) {
+        Log.e("rrrrr"," get response++++++  "+(i == null));
+        if (i != null) {
             Bundle bun = i.getExtras();
-            if(reqCode == 0 && resCode == RESULT_OK){
+            if (reqCode == 0 && resCode == RESULT_OK) {
+                Log.e("rrrrr"," get response++++++  "+(bun.getString("resultMessage")));
                 battlePlayer.forward(bun.getString("resultMessage"));
             }
         }
